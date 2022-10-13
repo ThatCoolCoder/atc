@@ -1,4 +1,4 @@
-use derive_more::Display;
+use std::fmt;
 
 use crate::command::*;
 use crate::direction::Direction;
@@ -31,8 +31,6 @@ pub enum PlaneState<'a> {
     AtAirport(&'a locations::Airport),
 }
 
-#[derive(Display)]
-#[display(fmt = "{}{}", name, altitude)]
 pub struct Plane<'a> {
     pub name: char,
     pub plane_type: PlaneType,
@@ -49,6 +47,16 @@ pub struct Plane<'a> {
 
     pub destination: &'a dyn Location,
     pub command_queue: Vec<Command<'a>>,
+}
+
+impl<'a> fmt::Display for Plane<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let capitalised_name = match self.plane_type {
+            PlaneType::Propeller => self.name.to_ascii_uppercase(),
+            PlaneType::Jet => self.name.to_ascii_lowercase(),
+        };
+        write!(f, "{}{}", capitalised_name, self.altitude)
+    }
 }
 
 pub const PLANE_STARTING_FUEL: i32 = 30;
