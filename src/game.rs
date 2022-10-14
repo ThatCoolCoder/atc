@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+
+use crate::command::*;
 use crate::direction::Direction;
 use crate::levels::level::Level;
 use crate::locations::*;
@@ -19,15 +22,15 @@ pub enum LoseCondition {
     PlaneRanOutOfFuel,
 }
 
-const MAX_PLANES: i32 = 20;
-const ENTRY_ALTITUDE: i32 = 7;
-const EXIT_ALTITUDE: i32 = 9;
-
 impl<'game> Game<'game> {
+    pub const MAX_PLANES: i32 = 20;
+    pub const ENTRY_ALTITUDE: i32 = 7;
+    pub const EXIT_ALTITUDE: i32 = 9;
+
     pub fn new(level: &'game Level) -> Self {
         let mut g = Game {
             planes: vec![],
-            level: level,
+            level,
             ticks: 0,
             planes_safe: 0,
         };
@@ -47,13 +50,14 @@ impl<'game> Game<'game> {
     }
 
     fn maybe_create_new_plane(&mut self) {
-        if self.planes.len() < MAX_PLANES as usize {
+        if self.planes.len() < Self::MAX_PLANES as usize {
             let mut rng = rand::thread_rng();
             if rng.gen::<f64>() <= self.level.plane_spawn_chance {
                 self.create_new_plane();
             }
         }
     }
+
     fn create_new_plane(&mut self) {
         // Randomly spawn a new plane
         let mut rng = rand::thread_rng();
@@ -94,17 +98,18 @@ impl<'game> Game<'game> {
                 PlaneType::Propeller
             },
 
-            altitude: ENTRY_ALTITUDE,
-            target_altitude: ENTRY_ALTITUDE,
+            altitude: Self::ENTRY_ALTITUDE,
+            target_altitude: Self::ENTRY_ALTITUDE,
             position,
             direction,
 
             state,
-            remaining_fuel: PLANE_STARTING_FUEL,
+            remaining_fuel: Plane::PLANE_STARTING_FUEL,
             visibility: PlaneVisibility::Marked,
             ticks_since_created: 0,
             destination,
             command_queue: vec![],
+            command_map: HashMap::new(),
         })
     }
 
@@ -166,7 +171,10 @@ impl<'game> Game<'game> {
         if spawn_point_idx < self.level.exits.len() {
             (None, Some(&self.level.exits[spawn_point_idx]))
         } else {
-            (Some(&self.level.airports[spawn_point_idx]), None)
+            (
+                Some(&self.level.airports[spawn_point_idx - self.level.exits.len()]),
+                None,
+            )
         }
     }
 }

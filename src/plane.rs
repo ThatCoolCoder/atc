@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt;
 
 use crate::command::*;
@@ -47,6 +48,7 @@ pub struct Plane<'a> {
 
     pub destination: &'a dyn Location,
     pub command_queue: Vec<Command<'a>>,
+    pub command_map: HashMap<CommandType, Command<'a>>,
 }
 
 impl<'a> fmt::Display for Plane<'a> {
@@ -59,9 +61,9 @@ impl<'a> fmt::Display for Plane<'a> {
     }
 }
 
-pub const PLANE_STARTING_FUEL: i32 = 30;
-
 impl<'a> Plane<'a> {
+    pub const PLANE_STARTING_FUEL: i32 = 30;
+
     pub fn fly(&mut self) {
         if self.ticks_since_created % self.plane_type.get_move_interval() == 0 {
             self.parse_all_commands();
@@ -98,70 +100,83 @@ impl<'a> Plane<'a> {
     fn parse_all_commands(&mut self) {
         // Very convoluted method of looping over the commands, otherwise we run into borrowing issues.
         // Why must it be so hard to delegate to submethods in rust?
-        let indices = &self
-            .command_queue
-            .iter()
-            .enumerate()
-            .map(|x| x.0)
-            .collect::<Vec<_>>();
-        for command_idx in indices {
-            self.parse_command(*command_idx);
+        // let indices = &self
+        //     .command_queue
+        //     .iter()
+        //     .enumerate()
+        //     .map(|x| x.0)
+        //     .collect::<Vec<_>>();
+        // for command_idx in indices {
+        //     self.parse_command(*command_idx);
+        // }
+
+        if self.parse_command(CommandType::Directional) {
+            self.command_map.remove(&CommandType::Directional);
+        }
+        if self.parse_command(CommandType::ChangeVisibility) {
+            self.command_map.remove(&CommandType::ChangeVisibility);
+        }
+        if self.parse_command(CommandType::ChangeAltitude) {
+            self.command_map.remove(&CommandType::ChangeAltitude);
         }
     }
 
-    fn parse_command(&mut self, command_idx: usize) -> bool {
-        // Read a single command and use it to modify the plane's state if needed.
-        // Returned value indicates whether the command has been fulfilled and can be removed.
-
-        let command = &self.command_queue[command_idx];
-
-        let do_it_now = match command.temporality {
-            CommandTemporality::Immediate => true,
-            CommandTemporality::Delayed(beacon) => self.position.equals(&beacon.position),
+    fn parse_command(&mut self, command_type: CommandType) -> bool {
+        let command = match self.command_map.get(&command_type) {
+            Some(v) => v,
+            None => return false,
         };
 
-        if !do_it_now {
-            return false;
-        }
+        let should_delete: bool = match &command {
+            Command::Directional(directional_command) => {
+                // Check if we should do the command now
+                let do_it_now = match directional_command.temporality {
+                    CommandTemporality::Immediate => true,
+                    CommandTemporality::Delayed(l) => l.position.equals(&self.position),
+                };
+                if !do_it_now {
+                    return false;
+                }
 
-        let should_delete: bool = match &command.value {
-            CommandValue::Directional(directional_command) => match directional_command {
-                DirectionalCommand::AbsoluteTurn(direction) => {
-                    let mut delta = self.direction.angle_to(direction).abs();
-                    let should_delete = delta <= 90;
-                    delta = delta.min(90); // limit turning per turn to 90
-                    let positivity = self.direction.compare_to(direction);
-                    self.direction = self.direction.add_heading(positivity * delta).unwrap();
-                    should_delete
+                // Actually run the command
+                match &directional_command.value {
+                    DirectionalCommandValue::AbsoluteTurn(direction) => {
+                        let mut delta = self.direction.angle_to(direction).abs();
+                        let should_delete = delta <= 90;
+                        delta = delta.min(90); // limit turning per turn to 90
+                        let positivity = self.direction.compare_to(direction);
+                        self.direction = self.direction.add_heading(positivity * delta).unwrap();
+                        should_delete
+                    }
+                    DirectionalCommandValue::SoftTurn { to_right } => {
+                        self.direction = self
+                            .direction
+                            .add_heading(if *to_right { 45 } else { -45 })
+                            .unwrap();
+                        true
+                    }
+                    DirectionalCommandValue::HardTurn { to_right } => {
+                        self.direction = self
+                            .direction
+                            .add_heading(if *to_right { 45 } else { -45 })
+                            .unwrap();
+                        true
+                    }
+                    DirectionalCommandValue::TurnTowards(_) => todo!(),
+                    DirectionalCommandValue::Circle { to_right } => {
+                        self.direction = self
+                            .direction
+                            .add_heading(if *to_right { 45 } else { -45 })
+                            .unwrap();
+                        false
+                    }
                 }
-                DirectionalCommand::SoftTurn { to_right } => {
-                    self.direction = self
-                        .direction
-                        .add_heading(if *to_right { 45 } else { -45 })
-                        .unwrap();
-                    true
-                }
-                DirectionalCommand::HardTurn { to_right } => {
-                    self.direction = self
-                        .direction
-                        .add_heading(if *to_right { 45 } else { -45 })
-                        .unwrap();
-                    true
-                }
-                DirectionalCommand::TurnTowards(_) => todo!(),
-                DirectionalCommand::Circle { to_right } => {
-                    self.direction = self
-                        .direction
-                        .add_heading(if *to_right { 45 } else { -45 })
-                        .unwrap();
-                    false
-                }
-            },
-            CommandValue::ChangeAltitude(altitude_command) => {
+            }
+            Command::ChangeAltitude(altitude_command) => {
                 match altitude_command {
                     ChangeAltitudeCommand::Absolute(altitude) => self.target_altitude = *altitude,
                     ChangeAltitudeCommand::Climb(amount) => {
-                        self.target_altitude = self.altitude + *amount
+                        self.target_altitude = self.altitude + amount
                     }
                     ChangeAltitudeCommand::Descend(amount) => {
                         self.target_altitude = self.altitude - amount
@@ -169,8 +184,80 @@ impl<'a> Plane<'a> {
                 };
                 true
             }
-            CommandValue::ChangeVisibility(new_visibility) => {
-                self.visibility = *new_visibility;
+            Command::ChangeVisibility(visibility_command) => {
+                self.visibility = visibility_command.new_visibility;
+                true
+            }
+        };
+
+        should_delete
+    }
+
+    fn parse_command_old(&mut self, command_idx: usize) -> bool {
+        // Read a single command and use it to modify the plane's state if needed.
+        // Returned value indicates whether the command has been fulfilled and can be removed.
+
+        let command = &self.command_queue[command_idx];
+
+        let should_delete: bool = match &command {
+            Command::Directional(directional_command) => {
+                // Check if we should do the command now
+                let do_it_now = match directional_command.temporality {
+                    CommandTemporality::Immediate => true,
+                    CommandTemporality::Delayed(l) => l.position.equals(&self.position),
+                };
+                if !do_it_now {
+                    return false;
+                }
+
+                // Actually run the command
+                match &directional_command.value {
+                    DirectionalCommandValue::AbsoluteTurn(direction) => {
+                        let mut delta = self.direction.angle_to(direction).abs();
+                        let should_delete = delta <= 90;
+                        delta = delta.min(90); // limit turning per turn to 90
+                        let positivity = self.direction.compare_to(direction);
+                        self.direction = self.direction.add_heading(positivity * delta).unwrap();
+                        should_delete
+                    }
+                    DirectionalCommandValue::SoftTurn { to_right } => {
+                        self.direction = self
+                            .direction
+                            .add_heading(if *to_right { 45 } else { -45 })
+                            .unwrap();
+                        true
+                    }
+                    DirectionalCommandValue::HardTurn { to_right } => {
+                        self.direction = self
+                            .direction
+                            .add_heading(if *to_right { 45 } else { -45 })
+                            .unwrap();
+                        true
+                    }
+                    DirectionalCommandValue::TurnTowards(_) => todo!(),
+                    DirectionalCommandValue::Circle { to_right } => {
+                        self.direction = self
+                            .direction
+                            .add_heading(if *to_right { 45 } else { -45 })
+                            .unwrap();
+                        false
+                    }
+                }
+            }
+            Command::ChangeAltitude(altitude_command) => {
+                match altitude_command {
+                    ChangeAltitudeCommand::Absolute(altitude) => self.target_altitude = *altitude,
+                    ChangeAltitudeCommand::Climb(amount) => {
+                        self.target_altitude = self.altitude + amount
+                    }
+                    ChangeAltitudeCommand::Descend(amount) => {
+                        self.target_altitude = self.altitude - amount
+                    }
+                };
+                true
+            }
+            Command::ChangeVisibility(visibility_command) => {
+                self.visibility = visibility_command.new_visibility;
                 true
             }
         };

@@ -30,13 +30,24 @@ fn main() {
     let mut game = game::Game::new(&level);
 
     let mut graphics_context = graphics::initialize(&game);
+    let mut result = Ok(());
     loop {
         graphics::draw(&game, &mut graphics_context);
-        if !game.tick().is_ok() {
-            println!("Oh noes we died");
+        result = game.tick();
+        if !result.is_ok() {
             break;
         }
         std::thread::sleep(std::time::Duration::from_millis(1000));
     }
     endwin();
+
+    match result {
+        Ok(_) => (),
+        Err(e) => match e {
+            game::LoseCondition::PlaneCollision => println!("Planes collided with each other"),
+            game::LoseCondition::PlaneIllegallyExited => println!("Plane exited illegally"),
+            game::LoseCondition::PlaneHitGround => println!("Plane hit the ground"),
+            game::LoseCondition::PlaneRanOutOfFuel => println!("Plane ran out of fuel"),
+        },
+    }
 }
