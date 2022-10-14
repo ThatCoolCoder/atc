@@ -30,7 +30,7 @@ impl<'game> Game<'game> {
     pub fn new(level: &'game Level) -> Self {
         let mut g = Game {
             planes: vec![],
-            level,
+            level: level,
             ticks: 0,
             planes_safe: 0,
         };
@@ -159,7 +159,7 @@ impl<'game> Game<'game> {
         panic!("Could not find a spare char for plane names (this should not be possible)");
     }
 
-    fn get_plane_by_name(&self, name: char) -> Option<&Plane> {
+    pub fn get_plane_by_name(&self, name: char) -> Option<&Plane> {
         self.planes.iter().filter(|&p| p.name == name).next()
     }
 

@@ -4,6 +4,7 @@ mod command_input;
 mod direction;
 mod game;
 mod graphics;
+mod interactive_game;
 mod levels;
 mod locations;
 mod plane;
@@ -12,33 +13,10 @@ mod point;
 use pancurses::{curs_set, endwin, initscr, newwin, start_color, A_BOLD};
 
 fn main() {
-    // window.keypad(true);
-    // noecho();
-    // loop {
-    //     match window.getch() {
-    //         Some(Input::Character(c)) => {
-    //             window.addch(c);
-    //         }
-    //         Some(Input::KeyDC) => break,
-    //         Some(input) => {
-    //             window.addstr(&format!("{:?}", input));
-    //         }
-    //         None => (),
-    //     }
-    // }
     let level = levels::default_level::create();
-    let mut game = game::Game::new(&level);
+    let mut interactive_game = interactive_game::InteractiveGame::from_level(&level);
 
-    let mut graphics_context = graphics::initialize(&game);
-    let mut result = Ok(());
-    loop {
-        graphics::draw(&game, &mut graphics_context);
-        result = game.tick();
-        if !result.is_ok() {
-            break;
-        }
-        std::thread::sleep(std::time::Duration::from_millis(1000));
-    }
+    let result = interactive_game.play();
     endwin();
 
     match result {

@@ -14,10 +14,11 @@ use pancurses::{
 use crate::game::Game;
 
 pub struct GraphicsContext {
-    radar_window: Window,
-    information_window: Window,
-    command_window: Window,
-    credits_window: Window,
+    pub stdscr: Window,
+    pub radar_window: Window,
+    pub information_window: Window,
+    pub command_window: Window,
+    pub credits_window: Window,
 }
 
 enum ColorPair {
@@ -35,11 +36,13 @@ const RIGHT_COLUMN_WIDTH: i32 = 30; // including border
 
 pub fn initialize(game: &Game) -> GraphicsContext {
     // Setup curses and the windows required for a game
-    let default_window = initscr();
-    let (height, width) = default_window.get_max_yx();
+    let stdscr = initscr();
+    let (height, width) = stdscr.get_max_yx();
 
     curs_set(0);
     start_color();
+    stdscr.keypad(true);
+    stdscr.nodelay(true);
     init_colors();
 
     let top = height - game.level.size.y - BOTTOM_ROW_HEIGHT;
@@ -69,6 +72,7 @@ pub fn initialize(game: &Game) -> GraphicsContext {
     );
 
     GraphicsContext {
+        stdscr,
         radar_window,
         information_window,
         command_window,
@@ -76,10 +80,10 @@ pub fn initialize(game: &Game) -> GraphicsContext {
     }
 }
 
-pub fn draw(game: &Game, graphics_context: &GraphicsContext) {
+pub fn draw(game: &Game, graphics_context: &GraphicsContext, input_preview: &str) {
     radar_display::draw(&graphics_context.radar_window, game);
     information_display::draw(&graphics_context.information_window, game);
-    command_display::draw(&graphics_context.command_window, game);
+    command_display::draw(&graphics_context.command_window, game, input_preview);
     credits_display::draw(&graphics_context.credits_window, game);
 }
 
