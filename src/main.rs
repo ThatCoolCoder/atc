@@ -1,6 +1,5 @@
 mod command;
-mod command_builder;
-mod command_input;
+mod command_parser;
 mod direction;
 mod game;
 mod graphics;

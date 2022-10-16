@@ -1,3 +1,4 @@
+use crate::command_parser;
 use crate::game::{Game, LoseCondition};
 use crate::graphics::{self, GraphicsContext};
 use crate::levels::level::Level;
@@ -71,19 +72,29 @@ impl<'game> InteractiveGame<'game> {
     }
 
     fn buffer_to_command(&mut self) {
-        let mut buffer = self.current_input_buffer.clone();
+        let buffer = self.current_input_buffer.clone();
         if buffer == "" {
-            self.frame_count = -1;
+            self.frame_count = -1; // todo: make a better way of resetting the frame counter
             self.current_input_error = "".to_string();
             return;
         }
 
         self.current_input_buffer = "".to_string();
-        let plane_name = buffer.remove(0);
-        let plane = self.game.get_plane_by_name(plane_name);
-        if let None = plane {
-            self.current_input_error = format!("Plane {plane_name} does not exist");
-            return;
+        match command_parser::parse_command(&buffer, &self.game) {
+            Ok((command, plane_name)) => {
+                // let plane = self.game.get_plane_by_name_mut(plane_name);
+                let plane = self
+                    .game
+                    .planes
+                    .iter_mut()
+                    .filter(|p| p.name == plane_name)
+                    .next();
+                match plane {
+                    Some(p) => p.add_command(command),
+                    None => self.current_input_error = format!("Plane {plane_name} does not exist"),
+                }
+            }
+            Err(error) => self.current_input_error = error,
         }
     }
 }

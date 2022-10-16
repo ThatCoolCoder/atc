@@ -75,6 +75,15 @@ impl<'a> Plane<'a> {
         self.ticks_since_created += 1;
     }
 
+    pub fn add_command(&mut self, command: Command<'a>) {
+        let command_type = match command {
+            Command::ChangeAltitude(_) => CommandType::ChangeAltitude,
+            Command::Directional(_) => CommandType::Directional,
+            Command::ChangeVisibility(_) => CommandType::ChangeVisibility,
+        };
+        self.command_map.insert(command_type, command);
+    }
+
     pub fn is_colliding_with(&self, other: &Plane) -> bool {
         (self.altitude - other.altitude).abs() <= 1
             && (self.position.x - other.position.x).abs() <= 1
@@ -100,15 +109,6 @@ impl<'a> Plane<'a> {
     fn parse_all_commands(&mut self) {
         // Very convoluted method of looping over the commands, otherwise we run into borrowing issues.
         // Why must it be so hard to delegate to submethods in rust?
-        // let indices = &self
-        //     .command_queue
-        //     .iter()
-        //     .enumerate()
-        //     .map(|x| x.0)
-        //     .collect::<Vec<_>>();
-        // for command_idx in indices {
-        //     self.parse_command(*command_idx);
-        // }
 
         if self.parse_command(CommandType::Directional) {
             self.command_map.remove(&CommandType::Directional);

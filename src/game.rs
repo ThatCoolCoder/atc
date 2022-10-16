@@ -163,6 +163,10 @@ impl<'game> Game<'game> {
         self.planes.iter().filter(|&p| p.name == name).next()
     }
 
+    pub fn get_plane_by_name_mut(&mut self, name: char) -> Option<&mut Plane<'game>> {
+        self.planes.iter_mut().filter(|p| p.name == name).next()
+    }
+
     fn random_airport_or_exit(&self) -> (Option<&'game Airport>, Option<&'game Exit>) {
         let mut rng = rand::thread_rng();
         let num_possibilities = self.level.exits.len() + self.level.airports.len() - 1;
