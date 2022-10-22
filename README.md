@@ -1,6 +1,6 @@
 # ATC
 
-It is a work in progress, you can't actually play it yet.
+Status: is very barely playable, has some problems, not all features implemented
 
 Reimplementation of the [version by msharov](https://github.com/msharov/bsd-games), which is itself a reimplementation of the traditional game from BSD.
 

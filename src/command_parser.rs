@@ -7,6 +7,8 @@ use crate::plane::PlaneVisibility;
 // - If their success is not guaranteed, then return Result<_, String>
 // - The String is an error message designed to be displayed to the user
 
+// First time really using lifetimes; I don't really know why it compiles but it does.
+
 pub fn parse_command<'game, 'cmd: 'game>(
     raw_command: &str,
     game: &'game Game<'cmd>,
