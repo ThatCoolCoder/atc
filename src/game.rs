@@ -141,7 +141,9 @@ impl<'game> Game<'game> {
     }
 
     fn remove_safe_planes(&mut self) {
+        let old_len = self.planes.len();
         self.planes.retain(|plane| !plane.is_at_destination());
+        self.planes_safe += (old_len - self.planes.len()) as i32;
     }
 
     fn check_lose_conditions(&self) -> Result<(), LoseCondition> {
