@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt;
 
 use crate::levels::level::Level;
 use crate::locations::*;
@@ -14,16 +15,36 @@ pub struct Game<'game> {
 }
 
 pub enum LoseCondition {
-    PlaneCollision,
-    PlaneIllegallyExited,
-    PlaneHitGround,
-    PlaneRanOutOfFuel,
+    PlaneCollision { plane_a: char, plane_b: char },
+    PlaneIllegallyExited { plane: char },
+    PlaneHitGround { plane: char },
+    PlaneRanOutOfFuel { plane: char },
+}
+
+impl fmt::Display for LoseCondition {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            LoseCondition::PlaneCollision { plane_a, plane_b } => {
+                write!(f, "Plane {plane_a} hit plane {plane_b}")
+            }
+            LoseCondition::PlaneIllegallyExited { plane } => {
+                write!(f, "Plane {plane} exited illegally")
+            }
+            LoseCondition::PlaneHitGround { plane } => {
+                write!(f, "Plane {plane} hit the ground")
+            }
+            LoseCondition::PlaneRanOutOfFuel { plane } => {
+                write!(f, "Plane {plane} ran out of fuel")
+            }
+        }
+    }
 }
 
 impl<'game> Game<'game> {
     pub const MAX_PLANES: i32 = 20;
     pub const ENTRY_ALTITUDE: i32 = 7;
     pub const AIRPORT_ENTRY_ALTITUDE: i32 = 0;
+    pub const LOW_FUEL_THRESHOLD: i32 = 15;
 
     pub fn new(level: &'game Level) -> Self {
         let mut g = Game {
@@ -41,7 +62,7 @@ impl<'game> Game<'game> {
 
         self.maybe_create_new_plane();
         self.move_planes();
-        self.remove_safe_planes();
+        self.remove_safe_planes(); // remove safe before checking lose so that EG planes that just landed don't count as crashed
         self.check_lose_conditions()?;
 
         Ok(())
@@ -104,7 +125,7 @@ impl<'game> Game<'game> {
             direction,
 
             state,
-            remaining_fuel: Plane::PLANE_STARTING_FUEL,
+            remaining_fuel: self.level.size.x + self.level.size.y,
             visibility: PlaneVisibility::Marked,
             ticks_since_created: 0,
             destination,
@@ -124,25 +145,37 @@ impl<'game> Game<'game> {
     }
 
     fn check_lose_conditions(&self) -> Result<(), LoseCondition> {
-        let mut airport_positions = self.level.airports.iter().map(|x| x.position);
-
         for plane in &self.planes {
             // Check if plane has hit ground
-            if plane.altitude == 0 && !airport_positions.any(|a| a.equals(&plane.position)) {
-                Err(LoseCondition::PlaneHitGround)?;
+            if plane.altitude == 0 && !plane.is_at_airport() {
+                Err(LoseCondition::PlaneHitGround { plane: plane.name })?;
             }
 
-            // todo: check if plane illegally exited
+            let is_out_of_bounds = plane.position.x <= 0
+                || plane.position.y <= 0
+                || plane.position.x >= self.level.size.x - 1
+                || plane.position.y >= self.level.size.y - 1;
+            if is_out_of_bounds && plane.ticks_since_created > 1 {
+                // (don't kill planes that have just entered because that makes no sense)
+                Err(LoseCondition::PlaneIllegallyExited { plane: plane.name })?;
+            }
 
             // Check if plane ran out of fuel
             if plane.remaining_fuel == 0 {
-                Err(LoseCondition::PlaneRanOutOfFuel)?;
+                Err(LoseCondition::PlaneRanOutOfFuel { plane: plane.name })?;
             }
 
             // Check collisions between planes
             for plane_2 in &self.planes {
-                if plane.name != plane_2.name && plane.is_colliding_with(plane_2) {
-                    Err(LoseCondition::PlaneCollision)?;
+                if !plane.is_at_airport()
+                    && !plane_2.is_at_airport()
+                    && plane.name != plane_2.name
+                    && plane.is_colliding_with(plane_2)
+                {
+                    Err(LoseCondition::PlaneCollision {
+                        plane_a: plane.name,
+                        plane_b: plane_2.name,
+                    })?;
                 }
             }
         }

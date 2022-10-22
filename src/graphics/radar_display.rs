@@ -5,6 +5,7 @@ use pancurses::{Window, A_BOLD};
 use super::utils;
 use super::ColorPair;
 use crate::game::Game;
+use crate::plane::PlaneState;
 use crate::plane::PlaneVisibility;
 use crate::point::Point;
 
@@ -77,6 +78,9 @@ fn draw_airports(window: &Window, game: &Game) {
 fn draw_planes(window: &Window, game: &Game) {
     window.color_set(ColorPair::MarkedPlane as i16);
     for plane in &game.planes {
+        if let PlaneState::AtAirport(_) = plane.state {
+            continue;
+        }
         if let PlaneVisibility::Marked = plane.visibility {
             window.attron(A_BOLD);
         } else {

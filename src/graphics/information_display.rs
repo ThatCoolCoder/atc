@@ -24,7 +24,19 @@ fn draw_plane_table(window: &Window, game: &Game) {
 
     let mut row = 4;
     for plane in &game.planes {
-        window.mvaddstr(row, 1, format!("{plane}:"));
+        let fuel_char = if plane.remaining_fuel <= Game::LOW_FUEL_THRESHOLD {
+            '*'
+        } else {
+            ' '
+        };
+        window.mvaddstr(
+            row,
+            1,
+            format!(
+                "{plane}{fuel_char}{}",
+                plane.destination.to_destination_string()
+            ),
+        );
         row += 1;
     }
 }

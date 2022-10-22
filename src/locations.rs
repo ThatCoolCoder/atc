@@ -8,6 +8,8 @@ use crate::point::Point;
 pub trait Location {
     fn get_position(&self) -> Point;
     fn accessible_from_direction(&self, direction: &Direction) -> bool;
+    fn can_exit_at_alt(&self, alt: i32) -> bool;
+    fn to_destination_string(&self) -> String;
 }
 
 pub struct Airport {
@@ -21,6 +23,12 @@ impl Location for Airport {
     }
     fn accessible_from_direction(&self, direction: &Direction) -> bool {
         direction == &self.flight_direction
+    }
+    fn can_exit_at_alt(&self, alt: i32) -> bool {
+        alt == 0
+    }
+    fn to_destination_string(&self) -> String {
+        format!("A{}", self.number)
     }
 }
 
@@ -44,6 +52,12 @@ impl Location for Beacon {
     fn accessible_from_direction(&self, _direction: &Direction) -> bool {
         true
     }
+    fn can_exit_at_alt(&self, _alt: i32) -> bool {
+        false // (one cannot exit at a beacon at all)
+    }
+    fn to_destination_string(&self) -> String {
+        format!("B{}", self.number)
+    }
 }
 
 #[derive(Display)]
@@ -60,6 +74,12 @@ impl Location for Exit {
     }
     fn accessible_from_direction(&self, direction: &Direction) -> bool {
         direction == &self.entry_direction || direction == &self.entry_direction.opposite()
+    }
+    fn can_exit_at_alt(&self, alt: i32) -> bool {
+        alt == 9
+    }
+    fn to_destination_string(&self) -> String {
+        format!("E{}", self.number)
     }
 }
 

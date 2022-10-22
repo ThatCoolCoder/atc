@@ -102,6 +102,6 @@ pub fn create() -> Level {
                 length: 18,
             },
         ],
-        plane_spawn_chance: 0.1,
+        plane_spawn_chance: 0.05,
     }
 }

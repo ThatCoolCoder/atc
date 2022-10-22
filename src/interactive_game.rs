@@ -33,7 +33,8 @@ impl<'game> InteractiveGame<'game> {
         }
     }
 
-    pub fn play(&mut self) -> Result<(), LoseCondition> {
+    pub fn play(&mut self) {
+        let result: Result<(), LoseCondition>;
         loop {
             match self.graphics_context.stdscr.getch() {
                 Some(input) => match input {
@@ -66,8 +67,34 @@ impl<'game> InteractiveGame<'game> {
             self.frame_count += 1;
 
             if self.frame_count % Self::FRAMES_PER_TICK == 0 {
-                self.game.tick()?;
+                match self.game.tick() {
+                    Ok(()) => (),
+                    Err(e) => {
+                        result = Err(e);
+                        break;
+                    }
+                }
             }
+        }
+
+        let result_text = match result {
+            Ok(_) => "somehow we got an ok result here, how?".to_string(),
+            Err(e) => e.to_string(),
+        } + ". Press space to exit";
+        graphics::draw(&self.game, &self.graphics_context, &result_text);
+
+        // Wait until enter pressed
+        loop {
+            if let Some(input) = self.graphics_context.stdscr.getch() {
+                if let Input::Character(c) = input {
+                    if c == ' ' {
+                        break;
+                    }
+                }
+            }
+            std::thread::sleep(std::time::Duration::from_millis(
+                Self::FRAME_INTERVAL as u64,
+            ));
         }
     }
 

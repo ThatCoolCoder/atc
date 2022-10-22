@@ -6,4 +6,4 @@ Reimplementation of the [version by msharov](https://github.com/msharov/bsd-game
 
 Written in rust, aims to have identical gameplay to the original, although there are minor changes that have been made to improve playability.
 
-I have not looked at the source code of any other versions except for getting the layout for `Default` level.
+I have not looked at the source code of any other versions except for getting the layout for `Default` level and getting the right values for plane critical fuel level.

@@ -62,14 +62,14 @@ impl<'a> fmt::Display for Plane<'a> {
 }
 
 impl<'a> Plane<'a> {
-    pub const PLANE_STARTING_FUEL: i32 = 30;
-
     pub fn fly(&mut self) {
         if self.ticks_since_created % self.plane_type.get_move_interval() == 0 {
             self.parse_all_commands();
             self.update_altitude();
-            self.update_position();
-            self.remaining_fuel -= 1;
+            if !self.is_at_airport() {
+                self.update_position();
+                self.remaining_fuel -= 1;
+            }
         }
 
         self.ticks_since_created += 1;
@@ -92,6 +92,15 @@ impl<'a> Plane<'a> {
 
     pub fn is_at_destination(&self) -> bool {
         self.position == self.destination.get_position()
+            && self.destination.accessible_from_direction(&self.direction)
+            && self.destination.can_exit_at_alt(self.altitude)
+    }
+
+    pub fn is_at_airport(&self) -> bool {
+        match self.state {
+            PlaneState::AtAirport(_) => true,
+            _ => false,
+        }
     }
 
     fn update_altitude(&mut self) {
@@ -138,6 +147,11 @@ impl<'a> Plane<'a> {
                     return false;
                 }
 
+                // Planes at airport can't change direction
+                if let PlaneState::AtAirport(_) = self.state {
+                    return true;
+                }
+
                 // Actually run the command
                 match &directional_command.value {
                     DirectionalCommandValue::AbsoluteTurn(direction) => {
@@ -173,6 +187,7 @@ impl<'a> Plane<'a> {
                 }
             }
             Command::ChangeAltitude(altitude_command) => {
+                self.state = PlaneState::Flying;
                 match altitude_command {
                     ChangeAltitudeCommand::Absolute(altitude) => self.target_altitude = *altitude,
                     ChangeAltitudeCommand::Climb(amount) => {
