@@ -205,7 +205,7 @@ impl<'game> Game<'game> {
 
     fn random_airport_or_exit(&self) -> (Option<&'game Airport>, Option<&'game Exit>) {
         let mut rng = rand::thread_rng();
-        let num_possibilities = self.level.exits.len() + self.level.airports.len() - 1;
+        let num_possibilities = self.level.exits.len() + self.level.airports.len();
         let spawn_point_idx: usize = rng.gen_range(0..num_possibilities);
 
         if spawn_point_idx < self.level.exits.len() {

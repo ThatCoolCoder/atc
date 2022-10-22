@@ -84,6 +84,10 @@ impl<'a> Plane<'a> {
         self.command_map.insert(command_type, command);
     }
 
+    pub fn get_command(&self, command_type: CommandType) -> Option<&Command> {
+        self.command_map.get(&command_type)
+    }
+
     pub fn is_colliding_with(&self, other: &Plane) -> bool {
         (self.altitude - other.altitude).abs() <= 1
             && (self.position.x - other.position.x).abs() <= 1
