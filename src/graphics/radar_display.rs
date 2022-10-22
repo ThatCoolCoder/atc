@@ -12,7 +12,7 @@ pub fn draw(window: &Window, game: &Game) {
     window.clear();
     window.attroff(A_BOLD);
     draw_background_dots(window, game);
-    draw_borders(window, game);
+    draw_borders(window);
     window.attron(A_BOLD);
     draw_airways(window, game);
     draw_beacons(window, game);
@@ -30,7 +30,7 @@ fn draw_background_dots(window: &Window, game: &Game) {
     window.mvaddstr(1, 0, text);
 }
 
-fn draw_borders(window: &Window, game: &Game) {
+fn draw_borders(window: &Window) {
     window.color_set(ColorPair::Markings as i16);
     utils::draw_standard_border(window);
 }

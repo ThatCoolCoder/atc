@@ -73,22 +73,18 @@ impl<'game> InteractiveGame<'game> {
 
     fn buffer_to_command(&mut self) {
         let buffer = self.current_input_buffer.clone();
+        self.current_input_buffer = "".to_string();
+
         if buffer == "" {
             self.frame_count = -1; // todo: make a better way of resetting the frame counter
             self.current_input_error = "".to_string();
             return;
         }
 
-        self.current_input_buffer = "".to_string();
         match command_parser::parse_command(&buffer, &self.game) {
             Ok((command, plane_name)) => {
-                // let plane = self.game.get_plane_by_name_mut(plane_name);
-                let plane = self
-                    .game
-                    .planes
-                    .iter_mut()
-                    .filter(|p| p.name == plane_name)
-                    .next();
+                self.current_input_error = "".to_string();
+                let plane = self.game.get_plane_by_name_mut(plane_name);
                 match plane {
                     Some(p) => p.add_command(command),
                     None => self.current_input_error = format!("Plane {plane_name} does not exist"),

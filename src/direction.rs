@@ -26,6 +26,20 @@ impl Direction {
         }
     }
 
+    pub fn from_keyboard_char(c: char) -> Option<Direction> {
+        match c {
+            'q' => Some(Direction::NorthWest),
+            'w' => Some(Direction::North),
+            'e' => Some(Direction::NorthEast),
+            'a' => Some(Direction::West),
+            'd' => Some(Direction::East),
+            'z' => Some(Direction::SouthWest),
+            'x' => Some(Direction::South),
+            'c' => Some(Direction::SouthEast),
+            _ => None,
+        }
+    }
+
     pub fn to_char(&self) -> char {
         match self {
             Direction::North => '^',

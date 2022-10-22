@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use crate::command::*;
-use crate::direction::Direction;
 use crate::levels::level::Level;
 use crate::locations::*;
 use crate::plane::*;
@@ -25,7 +23,7 @@ pub enum LoseCondition {
 impl<'game> Game<'game> {
     pub const MAX_PLANES: i32 = 20;
     pub const ENTRY_ALTITUDE: i32 = 7;
-    pub const EXIT_ALTITUDE: i32 = 9;
+    pub const AIRPORT_ENTRY_ALTITUDE: i32 = 0;
 
     pub fn new(level: &'game Level) -> Self {
         let mut g = Game {
@@ -64,13 +62,14 @@ impl<'game> Game<'game> {
 
         let location = self.random_airport_or_exit();
 
-        let (direction, state, position) = if location.0.is_some() {
+        let (direction, state, position, alt) = if location.0.is_some() {
             // Airport case
             let location: &'game Airport = location.0.unwrap();
             (
                 location.flight_direction,
                 PlaneState::AtAirport(location),
                 location.position,
+                Self::AIRPORT_ENTRY_ALTITUDE,
             )
         } else {
             // Exit case
@@ -79,6 +78,7 @@ impl<'game> Game<'game> {
                 location.entry_direction,
                 PlaneState::Flying,
                 location.position,
+                Self::ENTRY_ALTITUDE,
             )
         };
 
@@ -98,8 +98,8 @@ impl<'game> Game<'game> {
                 PlaneType::Propeller
             },
 
-            altitude: Self::ENTRY_ALTITUDE,
-            target_altitude: Self::ENTRY_ALTITUDE,
+            altitude: alt,
+            target_altitude: alt,
             position,
             direction,
 
@@ -159,6 +159,7 @@ impl<'game> Game<'game> {
         panic!("Could not find a spare char for plane names (this should not be possible)");
     }
 
+    #[allow(unused)]
     pub fn get_plane_by_name(&self, name: char) -> Option<&Plane> {
         self.planes.iter().filter(|&p| p.name == name).next()
     }

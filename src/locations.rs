@@ -41,7 +41,7 @@ impl Location for Beacon {
     fn get_position(&self) -> Point {
         self.position
     }
-    fn accessible_from_direction(&self, direction: &Direction) -> bool {
+    fn accessible_from_direction(&self, _direction: &Direction) -> bool {
         true
     }
 }

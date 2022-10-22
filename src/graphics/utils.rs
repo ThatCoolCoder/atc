@@ -21,16 +21,16 @@ pub fn draw_border(
         panic!("Game is too small!");
     }
 
-    window.mvaddstr(0, 0, "╔");
-    hline_fix(window, 0, 1, '═', width - 3);
-    window.mvaddstr(0, width - 2, "╗");
+    window.mvaddstr(0, 0, top_left.to_string());
+    hline_fix(window, 0, 1, top, width - 3);
+    window.mvaddstr(0, width - 2, top_right.to_string());
 
-    vline_fix(window, 1, 0, '║', height - 3);
-    vline_fix(window, 1, width - 2, '║', height - 3);
+    vline_fix(window, 1, 0, left, height - 3);
+    vline_fix(window, 1, width - 2, right, height - 3);
 
-    window.mvaddstr(height - 1, 0, "╚");
-    hline_fix(window, height - 1, 1, '═', width - 3);
-    window.mvaddstr(height - 1, width - 2, "╝");
+    window.mvaddstr(height - 1, 0, bottom_left.to_string());
+    hline_fix(window, height - 1, 1, bottom, width - 3);
+    window.mvaddstr(height - 1, width - 2, bottom_right.to_string());
 }
 
 // addch doesn't like unicode characters. pancurses used addch under the hood for hline and vline, so I've written custom versions using addstr, which does work

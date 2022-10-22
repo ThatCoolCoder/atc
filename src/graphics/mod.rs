@@ -7,8 +7,8 @@ mod radar_display;
 mod utils;
 
 use pancurses::{
-    curs_set, endwin, init_pair, initscr, newwin, start_color, Window, A_BOLD, COLOR_BLACK,
-    COLOR_BLUE, COLOR_GREEN, COLOR_RED, COLOR_WHITE, COLOR_YELLOW,
+    curs_set, init_pair, initscr, newwin, start_color, Window, COLOR_BLACK, COLOR_BLUE,
+    COLOR_GREEN, COLOR_RED, COLOR_WHITE, COLOR_YELLOW,
 };
 
 use crate::game::Game;

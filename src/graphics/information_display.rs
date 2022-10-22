@@ -1,4 +1,4 @@
-use pancurses::{Window, A_BOLD};
+use pancurses::Window;
 
 use super::utils;
 use crate::game::Game;

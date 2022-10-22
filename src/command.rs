@@ -9,10 +9,10 @@ pub enum CommandType {
     Directional,
 }
 
-pub enum Command<'a> {
+pub enum Command<'cmd> {
     ChangeAltitude(ChangeAltitudeCommand),
     ChangeVisibility(ChangeVisibilityCommand),
-    Directional(DirectionalCommand<'a>),
+    Directional(DirectionalCommand<'cmd>),
 }
 
 pub enum ChangeAltitudeCommand {
@@ -25,18 +25,18 @@ pub struct ChangeVisibilityCommand {
     pub new_visibility: plane::PlaneVisibility,
 }
 
-pub struct DirectionalCommand<'a> {
-    pub value: DirectionalCommandValue<'a>,
-    pub temporality: CommandTemporality<'a>,
+pub struct DirectionalCommand<'cmd> {
+    pub value: DirectionalCommandValue<'cmd>,
+    pub temporality: CommandTemporality<'cmd>,
 }
-pub enum DirectionalCommandValue<'a> {
+pub enum DirectionalCommandValue<'cmd> {
     AbsoluteTurn(Direction),     // turn to a specific direction
     SoftTurn { to_right: bool }, // turn 45 deg
     HardTurn { to_right: bool }, // turn 90 deg
-    TurnTowards(&'a dyn locations::Location),
+    TurnTowards(&'cmd dyn locations::Location),
     Circle { to_right: bool },
 }
-pub enum CommandTemporality<'a> {
+pub enum CommandTemporality<'cmd> {
     Immediate,
-    Delayed(&'a locations::Beacon),
+    Delayed(&'cmd locations::Beacon),
 }

@@ -9,7 +9,7 @@ mod locations;
 mod plane;
 mod point;
 
-use pancurses::{curs_set, endwin, initscr, newwin, start_color, A_BOLD};
+use pancurses::endwin;
 
 fn main() {
     let level = levels::default_level::create();
