@@ -85,7 +85,7 @@ impl<'game> InteractiveGame<'game> {
         let result_text = match result {
             Ok(_) => "somehow we got an ok result here, how?".to_string(),
             Err(e) => e.to_string(),
-        } + ". Press space to exit";
+        } + ".\nPress space to exit";
         graphics::draw(&self.game, &self.graphics_context, &result_text);
 
         // Wait until space pressed

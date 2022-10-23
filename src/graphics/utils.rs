@@ -1,3 +1,5 @@
+use std::thread::current;
+
 use pancurses::Window;
 
 pub fn draw_standard_border(window: &Window) {
@@ -44,5 +46,15 @@ pub fn vline_fix(window: &Window, y: i32, x: i32, char: char, len: i32) {
     while y_pos >= y {
         window.mvaddstr(y_pos, x, char.to_string());
         y_pos -= 1;
+    }
+}
+
+pub fn wmvaddstr_multiline(window: &Window, y: i32, x: i32, string: &str) {
+    // Like wmvaddstr but if there are multiple lines in the string it indents them equally.
+    let lines = string.split('\n');
+    let mut current_row = y;
+    for line in lines {
+        window.mvaddstr(current_row, x, line);
+        current_row += 1;
     }
 }
