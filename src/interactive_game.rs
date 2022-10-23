@@ -11,6 +11,7 @@ pub struct InteractiveGame<'game> {
     current_input_error: String,
     pub game: Game<'game>,
     graphics_context: GraphicsContext,
+    fast_forward_next_frame: bool,
     frame_count: i32,
 }
 
@@ -28,13 +29,14 @@ impl<'game> InteractiveGame<'game> {
             current_input_error: "".to_string(),
             game,
             graphics_context,
+            fast_forward_next_frame: false,
             frame_count: 0,
         }
     }
 
     pub fn play(&mut self) {
         let result: Result<(), LoseCondition>;
-        let frames_per_tick = self.game.level.move_interval / Self::FRAME_INTERVAL;
+        let frames_per_tick = (self.game.level.move_interval * Self::FRAME_INTERVAL) as i32;
         loop {
             match self.graphics_context.stdscr.getch() {
                 Some(input) => match input {
@@ -61,9 +63,12 @@ impl<'game> InteractiveGame<'game> {
 
             graphics::draw(&self.game, &self.graphics_context, input_preview);
 
-            std::thread::sleep(std::time::Duration::from_millis(
-                Self::FRAME_INTERVAL as u64,
-            ));
+            if !self.fast_forward_next_frame {
+                std::thread::sleep(std::time::Duration::from_millis(
+                    Self::FRAME_INTERVAL as u64,
+                ));
+            }
+            self.fast_forward_next_frame = false;
             self.frame_count += 1;
 
             if self.frame_count % frames_per_tick == 0 {
@@ -83,7 +88,7 @@ impl<'game> InteractiveGame<'game> {
         } + ". Press space to exit";
         graphics::draw(&self.game, &self.graphics_context, &result_text);
 
-        // Wait until enter pressed
+        // Wait until space pressed
         loop {
             if let Some(input) = self.graphics_context.stdscr.getch() {
                 if let Input::Character(c) = input {
@@ -104,6 +109,7 @@ impl<'game> InteractiveGame<'game> {
 
         if buffer == "" {
             self.frame_count = -1; // todo: make a better way of resetting the frame counter
+            self.fast_forward_next_frame = true;
             self.current_input_error = "".to_string();
             return;
         }
