@@ -15,8 +15,7 @@ pub struct InteractiveGame<'game> {
 }
 
 impl<'game> InteractiveGame<'game> {
-    const FRAME_INTERVAL: i32 = 100;
-    const FRAMES_PER_TICK: i32 = 30;
+    const FRAME_INTERVAL: i32 = 30;
 
     pub fn from_level(level: &'game Level) -> Self {
         Self::from_game(Game::new(level))
@@ -35,6 +34,7 @@ impl<'game> InteractiveGame<'game> {
 
     pub fn play(&mut self) {
         let result: Result<(), LoseCondition>;
+        let frames_per_tick = self.game.level.move_interval / Self::FRAME_INTERVAL;
         loop {
             match self.graphics_context.stdscr.getch() {
                 Some(input) => match input {
@@ -66,7 +66,7 @@ impl<'game> InteractiveGame<'game> {
             ));
             self.frame_count += 1;
 
-            if self.frame_count % Self::FRAMES_PER_TICK == 0 {
+            if self.frame_count % frames_per_tick == 0 {
                 match self.game.tick() {
                     Ok(()) => (),
                     Err(e) => {
