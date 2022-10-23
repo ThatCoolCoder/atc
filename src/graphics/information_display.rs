@@ -93,8 +93,8 @@ fn format_plane_directional_command(plane: &Plane) -> String {
                             let direction_char = if to_right { 'R' } else { 'L' };
                             format!("Soft {direction_char}")
                         }
-                        DirectionalCommandValue::TurnTowards(_location) => {
-                            todo!();
+                        DirectionalCommandValue::TurnTowards(location) => {
+                            format!("{}", location.to_destination_string())
                         }
                     };
                     let temporality_format = match directional.temporality {

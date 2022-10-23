@@ -1,6 +1,6 @@
 use crate::point::Point;
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Direction {
     North,
     NorthEast,

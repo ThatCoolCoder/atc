@@ -1,6 +1,7 @@
 use crate::command::*;
 use crate::direction::Direction;
 use crate::game::Game;
+use crate::locations::Location;
 use crate::plane::PlaneVisibility;
 
 // Conventions of the functions within this file:
@@ -71,21 +72,74 @@ fn create_turn_command<'game, 'cmd: 'game>(
         .ok_or(unexpected_end_of_command())?;
 
     let absolute_direction = Direction::from_keyboard_char(next_char);
-    let value = match absolute_direction {
-        Some(dir) => DirectionalCommandValue::AbsoluteTurn(dir),
+    let (value, next_index) = match absolute_direction {
+        Some(dir) => (DirectionalCommandValue::AbsoluteTurn(dir), 1),
         None => match next_char {
-            'l' | '-' => DirectionalCommandValue::SoftTurn { to_right: false },
-            'r' | '+' => DirectionalCommandValue::SoftTurn { to_right: true },
-            'L' => DirectionalCommandValue::HardTurn { to_right: false },
-            'R' => DirectionalCommandValue::HardTurn { to_right: true },
+            'l' | '-' => (DirectionalCommandValue::SoftTurn { to_right: false }, 1),
+            'r' | '+' => (DirectionalCommandValue::SoftTurn { to_right: true }, 1),
+            'L' => (DirectionalCommandValue::HardTurn { to_right: false }, 1),
+            'R' => (DirectionalCommandValue::HardTurn { to_right: true }, 1),
+            't' => {
+                let location = parse_location_subcommand(&raw_command[1..], game)?;
+                (DirectionalCommandValue::TurnTowards(location), 3)
+            }
             _ => Err("You stuffed up!".to_string())?,
         },
     };
     // todo: check if delayed position is in flight path
     Ok(Command::Directional(DirectionalCommand {
         value,
-        temporality: determine_command_temporality(&raw_command[1..], game)?,
+        temporality: determine_command_temporality(&raw_command[next_index..], game)?,
     }))
+}
+
+fn parse_location_subcommand<'game, 'cmd: 'game>(
+    raw_command: &str,
+    game: &'game Game<'cmd>,
+) -> Result<&'cmd dyn Location, String> {
+    // Parse something like 'b1' to be beacon 1
+    let mut chars = raw_command.chars();
+    let location_type = chars.next().ok_or(unexpected_end_of_command())?;
+    let x = chars.next().ok_or(unexpected_end_of_command())?;
+    let location_number = char_to_location_number(x)?;
+
+    let location: &dyn Location = match location_type {
+        'a' => {
+            let airport = game
+                .level
+                .airports
+                .iter()
+                .find(|a| a.number == location_number);
+            match airport {
+                Some(a) => a,
+                None => Err(format!("Airport {location_number} does not exist"))?,
+            }
+        }
+        'b' => {
+            let beacon = game
+                .level
+                .beacons
+                .iter()
+                .find(|b| b.number == location_number);
+            match beacon {
+                Some(b) => b,
+                None => Err(format!("Beacon {location_number} does not exist"))?,
+            }
+        }
+        'e' => {
+            let exit = game
+                .level
+                .exits
+                .iter()
+                .find(|e| e.number == location_number);
+            match exit {
+                Some(e) => e,
+                None => Err(format!("Exit {location_number} does not exist"))?,
+            }
+        }
+        other => Err(format!("Unexpected location type {other}"))?,
+    };
+    Ok(location)
 }
 
 fn create_change_altitude_command<'game>(raw_command: &str) -> Result<Command<'game>, String> {
@@ -113,10 +167,20 @@ fn create_change_altitude_command<'game>(raw_command: &str) -> Result<Command<'g
 }
 
 fn char_to_altitude(c: char) -> Result<i32, String> {
+    char_to_int(c).ok_or(format!("Invalid altitude {c}"))
+}
+
+fn char_to_location_number(c: char) -> Result<i32, String> {
+    char_to_int(c).ok_or(format!("Invalid location num {c}"))
+}
+
+fn char_to_int(c: char) -> Option<i32> {
+    // Convert a char like '9' into an int.
+    // returns none if char is not an int
     match c {
         // (convert to integer)
-        '0'..='9' => Ok(c as i32 - '0' as i32),
-        _ => Err(format!("Not an altitude: {c}"))?,
+        '0'..='9' => Some(c as i32 - '0' as i32),
+        _ => None,
     }
 }
 

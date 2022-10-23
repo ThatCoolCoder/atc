@@ -5,7 +5,7 @@ use crate::direction::Direction;
 use crate::point::Point;
 
 // Would be lovely to make a macro to derive this but making macros looks hard
-pub trait Location {
+pub trait Location: fmt::Display {
     fn get_position(&self) -> Point;
     fn accessible_from_direction(&self, direction: &Direction) -> bool;
     fn can_exit_at_alt(&self, alt: i32) -> bool;

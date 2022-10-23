@@ -159,11 +159,8 @@ impl<'a> Plane<'a> {
                 // Actually run the command
                 match &directional_command.value {
                     DirectionalCommandValue::AbsoluteTurn(direction) => {
-                        let mut delta = self.direction.angle_to(direction).abs();
-                        let should_delete = delta <= 90;
-                        delta = delta.min(90); // limit turning per turn to 90
-                        let positivity = self.direction.compare_to(direction);
-                        self.direction = self.direction.add_heading(positivity * delta).unwrap();
+                        self.direction = self.rotate_direction(&self.direction, &direction);
+                        let should_delete = self.direction == *direction;
                         should_delete
                     }
                     DirectionalCommandValue::SoftTurn { to_right } => {
@@ -180,7 +177,16 @@ impl<'a> Plane<'a> {
                             .unwrap();
                         true
                     }
-                    DirectionalCommandValue::TurnTowards(_) => todo!(),
+                    DirectionalCommandValue::TurnTowards(location) => {
+                        let position_delta = location.get_position().sub(&self.position);
+                        let target_heading = position_delta.heading().to_degrees();
+                        let target_heading = ((target_heading / 45.).round() * 45.) as i32;
+                        let target_direction = Direction::from_heading(target_heading).unwrap();
+                        self.direction = self.rotate_direction(&self.direction, &target_direction);
+                        let should_delete = self.direction == target_direction;
+
+                        should_delete
+                    }
                     DirectionalCommandValue::Circle { to_right } => {
                         self.direction = self
                             .direction
@@ -210,5 +216,14 @@ impl<'a> Plane<'a> {
         };
 
         should_delete
+    }
+
+    fn rotate_direction(&self, direction: &Direction, target: &Direction) -> Direction {
+        // Rotate a heading to a target, limiting turn to 90° per second
+
+        let mut delta = direction.angle_to(target).abs();
+        delta = delta.min(90); // limit turning per turn to 90
+        let positivity = direction.compare_to(target);
+        direction.add_heading(positivity * delta).unwrap()
     }
 }
