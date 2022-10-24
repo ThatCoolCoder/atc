@@ -1,5 +1,3 @@
-use std::thread::current;
-
 use pancurses::Window;
 
 pub fn draw_standard_border(window: &Window) {

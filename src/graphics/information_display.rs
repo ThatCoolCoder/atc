@@ -7,7 +7,7 @@ use crate::locations::{Airport, Location};
 use crate::plane::{Plane, PlaneState, PlaneVisibility};
 
 pub fn draw(window: &Window, game: &Game) {
-    window.clear();
+    window.erase();
     utils::draw_standard_border(window);
     draw_stats(window, game);
     draw_plane_table(window, game);

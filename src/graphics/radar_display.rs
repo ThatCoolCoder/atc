@@ -2,6 +2,8 @@
 
 use pancurses::{Window, A_BOLD};
 
+use std::thread;
+
 use super::utils;
 use super::ColorPair;
 use crate::game::Game;
@@ -10,7 +12,6 @@ use crate::plane::PlaneVisibility;
 use crate::point::Point;
 
 pub fn draw(window: &Window, game: &Game) {
-    window.clear();
     window.attroff(A_BOLD);
     draw_background_dots(window, game);
     draw_borders(window);
