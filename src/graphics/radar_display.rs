@@ -2,8 +2,6 @@
 
 use pancurses::{Window, A_BOLD};
 
-use std::thread;
-
 use super::utils;
 use super::ColorPair;
 use crate::game::Game;
