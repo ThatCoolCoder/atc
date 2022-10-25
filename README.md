@@ -13,7 +13,12 @@ Written in rust, aims to have identical gameplay to the original, although the f
 - Most of the scenarios have not been copied over from the original (more new ones are needed!)
 - Airports can now be facing in diagonal directions, not only orthogonally.
 
+Changes that area really todos/bugs:
+- Planes landing at the wrong airport are listed as crashing. Minor since you lose either way
+- Planes are not in alphabetical order in plane list. Moderate since it makes it hard to scan the list
+- Allows you to set delayed commands that will never occur (EG saying to turn at a beacon when that plane is not flying to that beacon). Minor since that shouldn't happen often
+
 I have not looked at the source code of any other versions except for getting the layout for `Default` level and getting specific values like low fuel threshold.
 
 #### Adding new scenarios (levels)
-To add a new scenario, you need to create a new rust file in `levels/`, reference it in `levels/mod.rs` and reference it in `main.rs`. You can figure out how to do this by looking at existing levels. Levels are defined in code, but it does not require much knowledge of rust. Convention is for exits to be numbered in clockwise order starting from top left. Airports and beacons are numbered from top to bottom. Numbering starts from 0 (not 1)
+To add a new scenario, you need to create a new rust file in `levels/`, reference it in `levels/mod.rs` and reference it in `main.rs`. You can figure out how to do this by looking at existing levels. Levels are defined in code, but it does not require much knowledge of rust to create/modify them. Convention is for exits to be numbered in clockwise order starting from top left. Airports and beacons are numbered from top to bottom. Numbering starts from 0 (not 1) The size of a level works like array indices: the left border has a position of 0, right has `size.x - 1`. Same for top/bottom. Things are allowed to be on the border because that's how exits work.
