@@ -26,7 +26,9 @@ fn draw_plane_table(window: &Window, game: &Game) {
     // Sort planes into groups
     let mut flying_planes = vec![];
     let mut waiting_planes: Vec<(&Plane, &Airport)> = vec![];
-    for plane in &game.planes {
+    let mut sorted_planes = game.planes.iter().collect::<Vec<_>>();
+    sorted_planes.sort_by_key(|p| p.name.to_ascii_lowercase());
+    for plane in sorted_planes {
         match plane.state {
             PlaneState::Flying => flying_planes.push(plane),
             PlaneState::AtAirport(airport) => waiting_planes.push((plane, airport)),

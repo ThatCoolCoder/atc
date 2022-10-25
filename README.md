@@ -12,11 +12,11 @@ Written in rust, aims to have identical gameplay to the original, although the f
 - Visibility commands do not take effect until the next tick.
 - Most of the scenarios have not been copied over from the original (more new ones are needed!)
 - Airports can now be facing in diagonal directions, not only orthogonally.
+- Planes are now in alphabetical order in plane list, to make it easier to scan the list
 
-Changes that area really todos/bugs:
+Changes that are really todos/bugs:
 - Planes landing at the wrong airport are listed as crashing. Minor since you lose either way
-- Planes are not in alphabetical order in plane list. Moderate since it makes it hard to scan the list
-- Allows you to set delayed commands that will never occur (EG saying to turn at a beacon when that plane is not flying to that beacon). Minor since that shouldn't happen often
+- Allows you to set delayed commands that will never occur (EG saying to turn at a beacon when that plane is not flying to that beacon). Minor since that shouldn't happen often to professionals
 
 I have not looked at the source code of any other versions except for getting the layout for `Default` level and getting specific values like low fuel threshold.
 
