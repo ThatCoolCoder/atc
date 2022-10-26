@@ -6,7 +6,7 @@ use crate::direction::Direction;
 use crate::locations::{self, Location};
 use crate::point::Point;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum PlaneVisibility {
     Marked,   // Fully visible
     Ignored,  // Less visible
@@ -135,12 +135,12 @@ impl<'a> Plane<'a> {
     }
 
     fn parse_command(&mut self, command_type: CommandType) -> bool {
-        let command = match self.command_map.get(&command_type) {
+        let mut command = match self.command_map.get_mut(&command_type) {
             Some(v) => v,
             None => return false,
         };
 
-        let should_delete: bool = match &command {
+        let should_delete: bool = match &mut command {
             Command::Directional(directional_command) => {
                 // Check if we should do the command now
                 let do_it_now = match directional_command.temporality {
@@ -151,15 +151,23 @@ impl<'a> Plane<'a> {
                     return false;
                 }
 
+                // Now that command has started to be processed, it should continue
+                directional_command.temporality = CommandTemporality::Immediate;
+
                 // Planes at airport can't change direction
                 if let PlaneState::AtAirport(_) = self.state {
                     return true;
                 }
 
+                // Modify unmarked state
+                if self.visibility == PlaneVisibility::Unmarked {
+                    self.visibility = PlaneVisibility::Marked;
+                }
+
                 // Actually run the command
                 match &directional_command.value {
                     DirectionalCommandValue::AbsoluteTurn(direction) => {
-                        self.direction = self.rotate_direction(&self.direction, &direction);
+                        self.direction = Direction::limited_rotate(&self.direction, &direction);
                         let should_delete = self.direction == *direction;
                         should_delete
                     }
@@ -182,7 +190,8 @@ impl<'a> Plane<'a> {
                         let target_heading = position_delta.heading().to_degrees();
                         let target_heading = ((target_heading / 45.).round() * 45.) as i32;
                         let target_direction = Direction::from_heading(target_heading).unwrap();
-                        self.direction = self.rotate_direction(&self.direction, &target_direction);
+                        self.direction =
+                            Direction::limited_rotate(&self.direction, &target_direction);
                         let should_delete = self.direction == target_direction;
 
                         should_delete
@@ -201,10 +210,10 @@ impl<'a> Plane<'a> {
                 match altitude_command {
                     ChangeAltitudeCommand::Absolute(altitude) => self.target_altitude = *altitude,
                     ChangeAltitudeCommand::Climb(amount) => {
-                        self.target_altitude = self.altitude + amount
+                        self.target_altitude = self.altitude + *amount
                     }
                     ChangeAltitudeCommand::Descend(amount) => {
-                        self.target_altitude = self.altitude - amount
+                        self.target_altitude = self.altitude - *amount
                     }
                 };
                 true
@@ -216,14 +225,5 @@ impl<'a> Plane<'a> {
         };
 
         should_delete
-    }
-
-    fn rotate_direction(&self, direction: &Direction, target: &Direction) -> Direction {
-        // Rotate a heading to a target, limiting turn to 90° per second
-
-        let mut delta = direction.angle_to(target).abs();
-        delta = delta.min(90); // limit turning per turn to 90
-        let positivity = direction.compare_to(target);
-        direction.add_heading(positivity * delta).unwrap()
     }
 }

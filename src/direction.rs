@@ -135,4 +135,13 @@ impl Direction {
     pub fn add_heading(&self, heading: i32) -> Option<Direction> {
         Direction::from_heading(self.to_heading() + heading)
     }
+
+    pub fn limited_rotate(direction: &Direction, target: &Direction) -> Direction {
+        // Rotate a heading to a target, limiting turn to 90° per second
+
+        let mut delta = direction.angle_to(target).abs();
+        delta = delta.min(90); // limit turning per turn to 90
+        let positivity = direction.compare_to(target);
+        direction.add_heading(positivity * delta).unwrap()
+    }
 }
