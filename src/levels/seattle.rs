@@ -1,13 +1,19 @@
+use indoc::indoc;
+
 use super::level::Level;
 use crate::direction::Direction;
 use crate::locations::*;
 use crate::point::Point;
 
 pub fn create() -> Level {
-    // Don't know why I called it Seattle
-
     Level {
-        description: "".to_string(),
+        description: indoc! {
+            "This scenario is named Seattle not because it's based on Seattle's geography, but because of the general chaos that's present.
+            Six exits, seven beacons, three airports and five potential sharp turns make for a taxing experience.
+            The planes also move very quickly - twice as fast as in the Default scenario - and spawn more often too.
+            You'll be thankful that with good planning most turns can be beacon-initiated. The unmark command will certainly become your friend here."
+        }
+        .to_string(),
         plane_spawn_chance: 0.15,
         move_interval: 2.5,
         size: Point::new(25, 21),

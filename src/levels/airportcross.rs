@@ -1,3 +1,5 @@
+use indoc::indoc;
+
 use super::level::Level;
 use crate::direction::Direction;
 use crate::locations::*;
@@ -5,9 +7,12 @@ use crate::point::Point;
 
 pub fn create() -> Level {
     Level {
+        description: indoc! {
+            "Tight level with only airports - no exits. The takeoff paths all intersect each other and each route takes at least three turns.
+            You'll have to carefully route the planes around the grid to keep everything under control."
+        }.to_string(),
         plane_spawn_chance: 0.1,
         move_interval: 5.,
-        description: "".to_string(),
         size: Point::new(19, 19),
 
         airports: vec![

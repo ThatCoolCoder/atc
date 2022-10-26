@@ -1,3 +1,5 @@
+use indoc::indoc;
+
 use super::level::Level;
 use crate::direction::Direction;
 use crate::locations::*;
@@ -5,7 +7,10 @@ use crate::point::Point;
 
 pub fn create() -> Level {
     Level {
-        description: "".to_string(),
+        description: indoc!{"A relatively easy level to cut your teeth on before moving on to harder stuff. Many exits but few airports.
+            Contains few beacons so you will need to do quite a bit of manual management.
+            This is the only level copied over from the reference implementation.",
+        }.to_string(),
         plane_spawn_chance: 0.1,
         move_interval: 5.,
         size: Point::new(30, 21),

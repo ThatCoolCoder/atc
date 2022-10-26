@@ -8,5 +8,6 @@ edition = "2021"
 [dependencies]
 argparse = "0.2.2"
 derive_more = "0.99.17"
+indoc = "1.0"
 pancurses = "0.17"
 rand = "0.8"

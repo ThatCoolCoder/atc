@@ -1,3 +1,5 @@
+use indoc::indoc;
+
 use super::level::Level;
 use crate::direction::Direction;
 use crate::locations::*;
@@ -5,7 +7,11 @@ use crate::point::Point;
 
 pub fn create() -> Level {
     Level {
-        description: "".to_string(),
+        description: indoc! {
+            "It's a small level, but that doesn't make it easy. Three airports facing inwards near the borders require much sheperding of planes.
+            There are also two potential tight corners that have to be manually initiated, as beacon-initiated turns would be too wide."
+        }
+        .to_string(),
         plane_spawn_chance: 0.125,
         move_interval: 4.,
         size: Point::new(15, 15),
