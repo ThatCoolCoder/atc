@@ -16,6 +16,8 @@ use std::collections::HashMap;
 
 fn main() {
     let mut level_map: HashMap<_, fn() -> levels::level::Level> = HashMap::new();
+    // Please order the levels alphabetically
+    level_map.insert("airportcross", levels::airportcross::create);
     level_map.insert("default", levels::default::create);
     level_map.insert("small", levels::small::create);
 
