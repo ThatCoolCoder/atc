@@ -18,14 +18,14 @@ pub fn create() -> Level {
                 flight_direction: Direction::SouthWest,
             },
             Airport {
-                position: Point::new(7, 11),
+                position: Point::new(11, 11),
                 number: 2,
-                flight_direction: Direction::NorthEast,
+                flight_direction: Direction::NorthWest,
             },
             Airport {
-                position: Point::new(11, 11),
+                position: Point::new(7, 11),
                 number: 3,
-                flight_direction: Direction::NorthWest,
+                flight_direction: Direction::NorthEast,
             },
         ],
         beacons: vec![
