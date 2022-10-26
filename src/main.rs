@@ -19,6 +19,7 @@ fn main() {
     // Please order the levels alphabetically
     level_map.insert("airportcross", levels::airportcross::create);
     level_map.insert("default", levels::default::create);
+    level_map.insert("seattle", levels::seattle::create);
     level_map.insert("small", levels::small::create);
 
     let options = cli::parse_args(&level_map.keys().map(|x| x.clone()).collect());
@@ -27,7 +28,7 @@ fn main() {
         Some(l) => l(),
         None => {
             println!(
-                "Unknown level: {}. Run with -h option for list of levels",
+                "Unknown level \"{}\". Run with -h option for list of levels",
                 options.level_name
             );
             return;

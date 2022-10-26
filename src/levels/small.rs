@@ -5,6 +5,9 @@ use crate::point::Point;
 
 pub fn create() -> Level {
     Level {
+        description: "".to_string(),
+        plane_spawn_chance: 0.125,
+        move_interval: 4.,
         size: Point::new(15, 15),
         airports: vec![
             Airport {
@@ -87,7 +90,5 @@ pub fn create() -> Level {
                 length: 9,
             },
         ],
-        plane_spawn_chance: 0.125,
-        move_interval: 4,
     }
 }

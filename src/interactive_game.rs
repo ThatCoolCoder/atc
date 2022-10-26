@@ -36,7 +36,7 @@ impl<'game> InteractiveGame<'game> {
 
     pub fn play(&mut self) {
         let result: Result<(), LoseCondition>;
-        let frames_per_tick = (self.game.level.move_interval * Self::FRAME_INTERVAL) as i32;
+        let frames_per_tick = (self.game.level.move_interval * Self::FRAME_INTERVAL as f64) as i32;
         loop {
             match self.graphics_context.stdscr.getch() {
                 Some(input) => match input {
