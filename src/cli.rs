@@ -3,19 +3,18 @@ use argparse;
 pub struct Options {
     pub level_name: String,
     pub show_description: bool,
+    pub show_level_list: bool,
 }
 
-pub fn parse_args(level_names: &Vec<&str>) -> Options {
+pub fn parse_args() -> Options {
     // Convert command line args into an Options struct
 
     // Init default options
     let mut options = Options {
         level_name: "Default".to_string(),
         show_description: false,
+        show_level_list: false,
     };
-
-    let level_names_string = level_names.join(", ");
-    let level_names_help = format!("Scenario name. Available options: {level_names_string}");
 
     // Set up argparser and use it
     {
@@ -23,7 +22,12 @@ pub fn parse_args(level_names: &Vec<&str>) -> Options {
         parser.refer(&mut options.level_name).add_argument(
             "scenario",
             argparse::Store,
-            &level_names_help,
+            "Scenario name. Use -l option to see available scenarios",
+        );
+        parser.refer(&mut options.show_level_list).add_option(
+            &["-l", "--list"],
+            argparse::StoreTrue,
+            "List available scenarios",
         );
         parser.refer(&mut options.show_description).add_option(
             &["-d", "--description"],
