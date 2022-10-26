@@ -32,7 +32,7 @@ enum ColorPair {
 }
 
 const BOTTOM_ROW_HEIGHT: i32 = 5; // including border
-const RIGHT_COLUMN_WIDTH: i32 = 30; // including border
+const RIGHT_COLUMN_WIDTH: i32 = 31; // including border
 
 pub fn initialize(game: &Game) -> GraphicsContext {
     // Setup curses and the windows required for a game
