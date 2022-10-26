@@ -50,7 +50,7 @@ pub fn initialize(game: &Game) -> GraphicsContext {
     let left_column_width = game.level.size.x * 2;
     let top_row_height = game.level.size.y;
     let total_width = left_column_width + RIGHT_COLUMN_WIDTH;
-    let middle_x = width / 2 + (left_column_width - total_width);
+    let middle_x = width / 2 + (left_column_width - total_width / 2);
 
     let radar_window = newwin(
         top_row_height,
@@ -71,7 +71,6 @@ pub fn initialize(game: &Game) -> GraphicsContext {
         height - BOTTOM_ROW_HEIGHT,
         middle_x,
     );
-
     GraphicsContext {
         stdscr,
         radar_window,
