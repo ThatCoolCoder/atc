@@ -40,15 +40,14 @@ impl<'game> InteractiveGame<'game> {
         loop {
             match self.graphics_context.stdscr.getch() {
                 Some(input) => match input {
-                    Input::Character(c) => {
-                        if c == '\n' {
-                            self.buffer_to_command();
-                        } else {
-                            self.current_input_buffer.push(c)
-                        }
-                    }
+                    Input::Character(c) => match c {
+                        '\n' => self.buffer_to_command(),
+                        // u+7f = backspace. In some terminal configs KeyBackspace isn't being created so we need to fix that
+                        '\u{7f}' => self.backspace(),
+                        other => self.current_input_buffer.push(other),
+                    },
                     Input::KeyBackspace => {
-                        self.current_input_buffer.pop();
+                        self.backspace();
                     }
                     _ => (),
                 },
@@ -125,5 +124,9 @@ impl<'game> InteractiveGame<'game> {
             }
             Err(error) => self.current_input_error = error,
         }
+    }
+
+    fn backspace(&mut self) {
+        self.current_input_buffer.pop();
     }
 }

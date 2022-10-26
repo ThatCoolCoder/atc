@@ -42,6 +42,7 @@ pub fn initialize(game: &Game) -> GraphicsContext {
     curs_set(0);
     start_color();
     stdscr.keypad(true);
+    pancurses::noecho();
     stdscr.nodelay(true);
     init_colors();
 
