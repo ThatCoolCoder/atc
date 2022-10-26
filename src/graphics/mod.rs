@@ -47,10 +47,10 @@ pub fn initialize(game: &Game) -> GraphicsContext {
     init_colors();
 
     let top = height - game.level.size.y - BOTTOM_ROW_HEIGHT;
-    let middle_x = width / 2;
-
     let left_column_width = game.level.size.x * 2;
     let top_row_height = game.level.size.y;
+    let total_width = left_column_width + RIGHT_COLUMN_WIDTH;
+    let middle_x = width / 2 + (left_column_width - total_width);
 
     let radar_window = newwin(
         top_row_height,
