@@ -22,7 +22,7 @@ fn main() {
     level_map.insert("Seattle", levels::seattle::create);
     level_map.insert("Small", levels::small::create);
 
-    let options = cli::parse_args(&level_names);
+    let options = cli::parse_args();
 
     let level = match level_map.get(&options.level_name as &str) {
         Some(factory) => factory(),
@@ -52,10 +52,10 @@ fn print_description(level_name: &str, level: &crate::levels::level::Level) {
     println!("{}", level.description);
 }
 
-fn print_level_list(level_map: &HashMap<_, fn() -> levels::level::Level>) {
+fn print_level_list(level_map: &HashMap<&str, fn() -> levels::level::Level>) {
     let mut level_names: Vec<_> = level_map.keys().map(|x| x.clone()).collect();
     level_names.sort();
 
-    println!("Available levels:")
+    println!("Available levels:");
     println!("{}", level_names.join("\n"));
 }
