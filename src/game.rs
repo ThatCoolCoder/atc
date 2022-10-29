@@ -81,11 +81,15 @@ impl<'game> Game<'game> {
         // Randomly spawn a new plane
         let mut rng = rand::thread_rng();
 
-        let location = self.random_airport_or_exit();
+        let location = self.any_random_airport_or_exit();
+
+        let mut available_airports: Vec<_> = self.level.airports.iter().collect();
+        let mut available_exits: Vec<_> = self.level.exits.iter().collect();
 
         let (direction, state, position, alt) = if location.0.is_some() {
             // Airport case
             let location: &'game Airport = location.0.unwrap();
+            available_airports.retain(|a| a.number != location.number); // prevent plane destination being current location.
             (
                 location.flight_direction,
                 PlaneState::AtAirport(location),
@@ -95,6 +99,7 @@ impl<'game> Game<'game> {
         } else {
             // Exit case
             let location = location.1.unwrap();
+            available_exits.retain(|e| e.number != location.number); // prevent plane destination being current location.
             (
                 location.entry_direction,
                 PlaneState::Flying,
@@ -103,7 +108,7 @@ impl<'game> Game<'game> {
             )
         };
 
-        let destination_tuple = self.random_airport_or_exit();
+        let destination_tuple = self.random_airport_or_exit(&available_airports, &available_exits);
         let destination: &dyn Location = if destination_tuple.0.is_some() {
             destination_tuple.0.unwrap()
         } else {
@@ -131,7 +136,7 @@ impl<'game> Game<'game> {
             destination,
             command_queue: vec![],
             command_map: HashMap::new(),
-        })
+        });
     }
 
     fn move_planes(&mut self) {
@@ -203,7 +208,7 @@ impl<'game> Game<'game> {
         self.planes.iter_mut().filter(|p| p.name == name).next()
     }
 
-    fn random_airport_or_exit(&self) -> (Option<&'game Airport>, Option<&'game Exit>) {
+    fn any_random_airport_or_exit(&self) -> (Option<&'game Airport>, Option<&'game Exit>) {
         let mut rng = rand::thread_rng();
         let num_possibilities = self.level.exits.len() + self.level.airports.len();
         let spawn_point_idx: usize = rng.gen_range(0..num_possibilities);
@@ -215,6 +220,22 @@ impl<'game> Game<'game> {
                 Some(&self.level.airports[spawn_point_idx - self.level.exits.len()]),
                 None,
             )
+        }
+    }
+
+    fn random_airport_or_exit(
+        &self,
+        airports: &Vec<&'game Airport>,
+        exits: &Vec<&'game Exit>,
+    ) -> (Option<&'game Airport>, Option<&'game Exit>) {
+        let mut rng = rand::thread_rng();
+        let num_possibilities = exits.len() + airports.len();
+        let spawn_point_idx: usize = rng.gen_range(0..num_possibilities);
+
+        if spawn_point_idx < exits.len() {
+            (None, Some(&exits[spawn_point_idx]))
+        } else {
+            (Some(&airports[spawn_point_idx - exits.len()]), None)
         }
     }
 }
