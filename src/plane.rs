@@ -95,7 +95,7 @@ impl<'a> Plane<'a> {
     }
 
     pub fn is_at_destination(&self) -> bool {
-        self.position == self.destination.get_position()
+        self.position.equals(&self.destination.get_position())
             && self.destination.accessible_from_direction(&self.direction)
             && self.destination.can_exit_at_alt(self.altitude)
     }

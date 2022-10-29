@@ -70,6 +70,7 @@ fn draw_plane_table(window: &Window, game: &Game) {
                 airport.to_destination_string()
             ),
         );
+        row += 1;
     }
 }
 
