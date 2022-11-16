@@ -18,7 +18,7 @@ pub struct InteractiveGame<'game> {
 impl<'game> InteractiveGame<'game> {
     const FRAME_INTERVAL: i32 = 30;
 
-    pub fn from_level(level: &'game Level) -> Self {
+    pub fn from_level(level: &'game mut Level) -> Self {
         Self::from_game(Game::new(level))
     }
 

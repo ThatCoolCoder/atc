@@ -24,7 +24,7 @@ fn main() {
 
     let options = cli::parse_args();
 
-    let level = match level_map.get(&options.level_name as &str) {
+    let mut level = match level_map.get(&options.level_name as &str) {
         Some(factory) => factory(),
         None => {
             println!(
@@ -40,7 +40,7 @@ fn main() {
     } else if options.show_level_list {
         print_level_list(&level_map)
     } else {
-        let mut interactive_game = interactive_game::InteractiveGame::from_level(&level);
+        let mut interactive_game = interactive_game::InteractiveGame::from_level(&mut level);
         interactive_game.play();
         endwin();
     }

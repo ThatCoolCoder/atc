@@ -12,7 +12,7 @@ pub fn create() -> Level {
             There are also two potential tight corners that have to be manually initiated, as beacon-initiated turns would be too wide."
         }
         .to_string(),
-        plane_spawn_chance: 0.125,
+        plane_spawn_chance: 1.125,
         move_interval: 4.,
         size: Point::new(15, 15),
         airports: vec![
@@ -48,26 +48,26 @@ pub fn create() -> Level {
                 number: 0,
                 entry_direction: Direction::SouthEast,
             },
-            Exit {
-                position: Point::new(14, 2),
-                number: 1,
-                entry_direction: Direction::SouthWest,
-            },
-            Exit {
-                position: Point::new(14, 6),
-                number: 2,
-                entry_direction: Direction::West,
-            },
-            Exit {
-                position: Point::new(6, 14),
-                number: 3,
-                entry_direction: Direction::North,
-            },
-            Exit {
-                position: Point::new(0, 10),
-                number: 4,
-                entry_direction: Direction::East,
-            },
+            // Exit {
+            //     position: Point::new(14, 2),
+            //     number: 1,
+            //     entry_direction: Direction::SouthWest,
+            // },
+            // Exit {
+            //     position: Point::new(14, 6),
+            //     number: 2,
+            //     entry_direction: Direction::West,
+            // },
+            // Exit {
+            //     position: Point::new(6, 14),
+            //     number: 3,
+            //     entry_direction: Direction::North,
+            // },
+            // Exit {
+            //     position: Point::new(0, 10),
+            //     number: 4,
+            //     entry_direction: Direction::East,
+            // },
         ],
         airways: vec![
             Airway {

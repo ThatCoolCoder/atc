@@ -17,7 +17,6 @@ Written in rust, aims to have identical gameplay to the original, although the f
 Changes that are really todos/bugs:
 - Planes landing at the wrong airport are listed as crashing. Minor since you lose either way
 - Allows you to set delayed commands that will never occur (EG saying to turn at a beacon when that plane is not flying to that beacon). Minor since that shouldn't happen often to professionals
-- Sometimes 2 planes spawn at the same entry on successive turns and crash immediately. Solution: add a cooldown time to each entry. (I'm not sure if this is how it's done in the original but this should work)
 
 I have not looked at the source code of any other versions except for getting the layout for `Default` level and getting specific values like low fuel threshold.
 

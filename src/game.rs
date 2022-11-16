@@ -12,6 +12,8 @@ pub struct Game<'game> {
     pub level: &'game Level,
     pub ticks: i32,
     pub planes_safe: i32,
+    // Map of entry number to when the previous plane was spawned there
+    entry_last_spawn: HashMap<i32, i32>,
 }
 
 pub enum LoseCondition {
@@ -45,13 +47,15 @@ impl<'game> Game<'game> {
     pub const ENTRY_ALTITUDE: i32 = 7;
     pub const AIRPORT_ENTRY_ALTITUDE: i32 = 0;
     pub const LOW_FUEL_THRESHOLD: i32 = 15;
+    pub const MIN_ENTRY_SPAWN_INTERVAL: i32 = 5;
 
-    pub fn new(level: &'game Level) -> Self {
+    pub fn new(level: &'game mut Level) -> Self {
         let mut g = Game {
             planes: vec![],
             level: level,
             ticks: 0,
             planes_safe: 0,
+            entry_last_spawn: HashMap::new(),
         };
         g.create_new_plane();
         g
@@ -81,15 +85,25 @@ impl<'game> Game<'game> {
         // Randomly spawn a new plane
         let mut rng = rand::thread_rng();
 
-        let location = self.any_random_airport_or_exit();
+        let available_takeoff_airports: Vec<_> = self.level.airports.iter().collect();
 
-        let mut available_airports: Vec<_> = self.level.airports.iter().collect();
+        let mut available_entries: Vec<_> = self.level.exits.iter().collect();
+        available_entries.retain(|e| {
+            self.entry_last_spawn.get(&e.number).unwrap_or(&-1000) + Self::MIN_ENTRY_SPAWN_INTERVAL
+                < self.ticks
+        });
+        let location = self.random_airport_or_exit(&available_takeoff_airports, &available_entries);
+
+        let mut available_landing_airports: Vec<_> = self.level.airports.iter().collect();
         let mut available_exits: Vec<_> = self.level.exits.iter().collect();
 
         let (direction, state, position, alt) = if location.0.is_some() {
             // Airport case
             let location: &'game Airport = location.0.unwrap();
-            available_airports.retain(|a| a.number != location.number); // prevent plane destination being current location.
+
+            // prevent plane destination being current location.
+
+            available_landing_airports.retain(|a| a.number != location.number);
             (
                 location.flight_direction,
                 PlaneState::AtAirport(location),
@@ -99,7 +113,11 @@ impl<'game> Game<'game> {
         } else {
             // Exit case
             let location = location.1.unwrap();
-            available_exits.retain(|e| e.number != location.number); // prevent plane destination being current location.
+
+            self.entry_last_spawn.insert(location.number, self.ticks);
+
+            // prevent plane destination being current location.
+            available_exits.retain(|e| e.number != location.number);
             (
                 location.entry_direction,
                 PlaneState::Flying,
@@ -108,7 +126,8 @@ impl<'game> Game<'game> {
             )
         };
 
-        let destination_tuple = self.random_airport_or_exit(&available_airports, &available_exits);
+        let destination_tuple =
+            self.random_airport_or_exit(&available_landing_airports, &available_exits);
         let destination: &dyn Location = if destination_tuple.0.is_some() {
             destination_tuple.0.unwrap()
         } else {
