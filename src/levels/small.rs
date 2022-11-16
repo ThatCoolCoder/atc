@@ -12,7 +12,7 @@ pub fn create() -> Level {
             There are also two potential tight corners that have to be manually initiated, as beacon-initiated turns would be too wide."
         }
         .to_string(),
-        plane_spawn_chance: 1.125,
+        plane_spawn_chance: 0.125,
         move_interval: 4.,
         size: Point::new(15, 15),
         airports: vec![
